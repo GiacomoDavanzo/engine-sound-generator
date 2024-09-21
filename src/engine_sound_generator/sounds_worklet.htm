@@ -20,7 +20,7 @@
 
    <script type="module">
       import * as THREE from '../three_js/build/three.module.js';
-      import { SoundGeneratorAudioListener, SineWaveSoundGenerator, EngineSoundGenerator } from './sound_generator_worklet.js';
+      import { SoundGeneratorAudioListener, SineWaveSoundGenerator, EngineSoundGenerator, ElectricEngineSoundGenerator } from './sound_generator_worklet.js';
       import Engine from '../engine.js';
 
       /*
@@ -39,6 +39,8 @@
          listener = new SoundGeneratorAudioListener();
          SineWaveSoundGenerator.load(loadingManager, listener, ".");
          EngineSoundGenerator.load(loadingManager, listener, ".");
+
+         ElectricEngineSoundGenerator.load(loadingManager, listener, ".")
       }
 
       function moduleInit() {
@@ -69,6 +71,8 @@
 
          audioContext = listener.context;
          soundSineWave = new SineWaveSoundGenerator({ listener: listener });
+
+         electricEngineSineWave = new ElectricEngineSoundGenerator({ listener: listener })
 
          engine = new Engine();
          /*
@@ -109,11 +113,16 @@
          gainNode = soundCarEngine.gain;
          gainNode.gain.value = 0.01 * inputCarEngineVolume.value;
 
+         // let electricSineWaveVolume = document.getElementById("input_sine_wave_volume"); // TODO change
+         gainNode = electricEngineSineWave.gain;
+         gainNode.gain.value = 0.01 * inputSineWaveVolume.value;
+
          cube.add(soundSineWave);
          cube.add(soundCarEngine);
 
          audioAnalyser = audioContext.createAnalyser();
          audioAnalyser.fftSize = 2048;
+         electricEngineSineWave.gain.connect(audioAnalyser)
          soundSineWave.gain.connect(audioAnalyser);
          soundCarEngine.gain.connect(audioAnalyser);
          audioAnalyserBuffer = new Uint8Array(audioAnalyser.frequencyBinCount);
@@ -205,9 +214,14 @@
          soundStarted = true;
       }
 
-      function playSoundSineWave() {
+      function playElectricEngine() {
+         electricEngineSineWave.play();
+         startSoundGenerator();
+      }
 
+      function playSoundSineWave() {
          soundSineWave.play();
+         electricEngineSineWave.play();
          startSoundGenerator();
       }
 
@@ -239,6 +253,8 @@
       var soundSineWave;
       var engine;
       var soundCarEngine;
+
+      var electricEngineSineWave
 
       var audioContext;
       var audioAnalyser;
@@ -306,6 +322,9 @@
          labelSineWaveVolume.innerHTML = "Volume " + event.target.value + " %";
          let gainNode = soundSineWave.gain;
          gainNode.gain.value = 0.01 * event.target.value;
+
+         gainNode = electricEngineSineWave.gain;
+         gainNode.gain.value = 0.01 * event.target.value;
       }
 
       function updateSineWaveFrequency(event) {
@@ -313,6 +332,10 @@
          let frequencyParam = soundSineWave.worklet.parameters.get('frequency');
          frequencyParam.value = event.target.value;
          soundSineWave.frequency = event.target.value;
+
+         frequencyParam = electricEngineSineWave.worklet.parameters.get('frequency')
+         frequencyParam.value = event.target.value;
+         electricEngineSineWave.frequency = event.target.value;
       }
 
       async function togglePlaySineWaveSound(button) {
@@ -324,6 +347,7 @@
          }
          button.value = "play";
          soundSineWave.stop();
+         electricEngineSineWave.stop()
       }
 
       function updateCarEngineVolume(event) {
@@ -363,12 +387,14 @@
             engine.start();
             button.value = "stop";
             playSoundCarEngine();
+            playElectricEngine();
             return;
          }
          engine.starting = false;
          engine.started = false;
          button.value = "play";
          soundCarEngine.stop();
+         oscillator.stop();
       }
 
    </script>

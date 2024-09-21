@@ -142,6 +142,25 @@ class SineWaveSoundGenerator extends SoundGenerator {
 
 }
 
+class ElectricEngineSoundGenerator extends SoundGenerator {
+
+   constructor ({listener}) {
+      super(listener);
+      let options = {numberOfInputs: 0, numberOfOutputs: 1};
+      this.addWorkletNode(options);
+   }
+
+   addWorkletNode (options) {
+      this.worklet = new AudioWorkletNode (this.listener.context, "electric-engine-audio-processor", options);
+      this._setNodeSources ([this.worklet]);
+   }
+
+   static load (loadingManager, listener, basePath="") {
+      SoundGenerator._load(loadingManager, listener, basePath+"/electric_sound_generator_worklet.js");
+   }
+
+}
+
 class EngineSoundGenerator extends SoundGenerator {
 
    constructor ({listener, parameters}) {
@@ -201,4 +220,4 @@ class EngineSoundGenerator extends SoundGenerator {
 
 }
 
-export {SoundGeneratorAudioListener, SineWaveSoundGenerator, EngineSoundGenerator};
+export {SoundGeneratorAudioListener, SineWaveSoundGenerator, EngineSoundGenerator, ElectricEngineSoundGenerator};

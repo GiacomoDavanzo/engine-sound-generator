@@ -72,7 +72,7 @@
          audioContext = listener.context;
          soundSineWave = new SineWaveSoundGenerator({ listener: listener });
 
-         electricEngineSineWave = new ElectricEngineSoundGenerator({ listener: listener })
+         soundElectricEngine = new ElectricEngineSoundGenerator({ listener: listener })
 
          engine = new Engine();
          /*
@@ -114,15 +114,15 @@
          gainNode.gain.value = 0.01 * inputCarEngineVolume.value;
 
          // let electricSineWaveVolume = document.getElementById("input_sine_wave_volume"); // TODO change
-         gainNode = electricEngineSineWave.gain;
-         gainNode.gain.value = 0.01 * inputSineWaveVolume.value;
+         gainNode = soundElectricEngine.gain;
+         gainNode.gain.value = 0.01 * inputCarEngineVolume.value;
 
          cube.add(soundSineWave);
          cube.add(soundCarEngine);
 
          audioAnalyser = audioContext.createAnalyser();
          audioAnalyser.fftSize = 2048;
-         electricEngineSineWave.gain.connect(audioAnalyser)
+         soundElectricEngine.gain.connect(audioAnalyser)
          soundSineWave.gain.connect(audioAnalyser);
          soundCarEngine.gain.connect(audioAnalyser);
          audioAnalyserBuffer = new Uint8Array(audioAnalyser.frequencyBinCount);
@@ -215,18 +215,18 @@
       }
 
       function playElectricEngine() {
-         electricEngineSineWave.play();
+         soundElectricEngine.play();
          startSoundGenerator();
       }
 
       function playSoundSineWave() {
          soundSineWave.play();
-         electricEngineSineWave.play();
          startSoundGenerator();
       }
 
       function playSoundCarEngine() {
          soundCarEngine.play();
+         soundElectricEngine.play();
          startSoundGenerator();
       }
 
@@ -254,7 +254,7 @@
       var engine;
       var soundCarEngine;
 
-      var electricEngineSineWave
+      var soundElectricEngine
 
       var audioContext;
       var audioAnalyser;
@@ -322,9 +322,6 @@
          labelSineWaveVolume.innerHTML = "Volume " + event.target.value + " %";
          let gainNode = soundSineWave.gain;
          gainNode.gain.value = 0.01 * event.target.value;
-
-         gainNode = electricEngineSineWave.gain;
-         gainNode.gain.value = 0.01 * event.target.value;
       }
 
       function updateSineWaveFrequency(event) {
@@ -333,9 +330,9 @@
          frequencyParam.value = event.target.value;
          soundSineWave.frequency = event.target.value;
 
-         frequencyParam = electricEngineSineWave.worklet.parameters.get('frequency')
-         frequencyParam.value = event.target.value;
-         electricEngineSineWave.frequency = event.target.value;
+         // frequencyParam = soundElectricEngine.worklet.parameters.get('frequency')
+         // frequencyParam.value = event.target.value;
+         // soundElectricEngine.frequency = event.target.value;
       }
 
       async function togglePlaySineWaveSound(button) {
@@ -347,12 +344,14 @@
          }
          button.value = "play";
          soundSineWave.stop();
-         electricEngineSineWave.stop()
       }
 
       function updateCarEngineVolume(event) {
          labelCarEngineVolume.innerHTML = "Volume " + event.target.value + " %";
          let gainNode = soundCarEngine.gain;
+         gainNode.gain.value = 0.01 * event.target.value;
+
+         gainNode = soundElectricEngine.gain;
          gainNode.gain.value = 0.01 * event.target.value;
       }
 
@@ -387,14 +386,13 @@
             engine.start();
             button.value = "stop";
             playSoundCarEngine();
-            playElectricEngine();
             return;
          }
          engine.starting = false;
          engine.started = false;
          button.value = "play";
          soundCarEngine.stop();
-         oscillator.stop();
+         soundElectricEngine.stop();
       }
 
    </script>

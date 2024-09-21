@@ -16,7 +16,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
     return [
       {
         name: "frequency",
-        defaultValue: 440,
+        defaultValue: 16000,
         minValue: 20,
         maxValue: 20000,
         automationRate: "a-rate",

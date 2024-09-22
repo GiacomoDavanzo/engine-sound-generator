@@ -156,6 +156,12 @@
             let rpmParam = soundCarEngine.worklet.parameters.get('rpm');
             rpmParam.value = engine.rpm;
          }
+
+         if (soundElectricEngine.source) {
+            let rpmParam = soundElectricEngine.worklet.parameters.get('rpm');
+            rpmParam.value = engine.rpm;
+         }
+
          engine.update(0.001 * dt);
 
          updateCanvasSpectogram();
@@ -214,11 +220,6 @@
          soundStarted = true;
       }
 
-      function playElectricEngine() {
-         soundElectricEngine.play();
-         startSoundGenerator();
-      }
-
       function playSoundSineWave() {
          soundSineWave.play();
          startSoundGenerator();
@@ -226,6 +227,10 @@
 
       function playSoundCarEngine() {
          soundCarEngine.play();
+         startSoundGenerator();
+      }
+
+      function playSoundElectricEngine() {
          soundElectricEngine.play();
          startSoundGenerator();
       }
@@ -234,6 +239,9 @@
       window.moduleInit = moduleInit;
       window.playSoundSineWave = playSoundSineWave;
       window.playSoundCarEngine = playSoundCarEngine;
+
+      window.playSoundElectricEngine = playSoundElectricEngine;
+      window.engine = engine;
 
    </script>
 
@@ -254,6 +262,7 @@
       var engine;
       var soundCarEngine;
 
+      var isElectricEngine = false;
       var soundElectricEngine
 
       var audioContext;
@@ -312,6 +321,11 @@
          inputCarEngineThrottle.addEventListener("input", updateCarEngineThrottle);
          labelCarEngineThrottle = document.getElementById("label_car_engine_throttle");
          labelCarEngineThrottle.innerHTML = "Throttle  " + inputCarEngineThrottle.value + " %";
+
+         let inputEngineType = document.getElementById("electric_engine");
+         inputEngineType.addEventListener("change", () => {
+            isElectricEngine = inputEngineType.checked
+         });
 
          labelCarEngineRpm = document.getElementById("span_car_engine_rpm");
 
@@ -383,16 +397,28 @@
       async function togglePlayCarEngineSound(button) {
          await audioContext.resume();
          if (button.value === "play") {
+
             engine.start();
             button.value = "stop";
-            playSoundCarEngine();
+
+            if (isElectricEngine) {
+               playSoundElectricEngine();
+            } else {
+               playSoundCarEngine();
+            }
+
             return;
          }
+
          engine.starting = false;
          engine.started = false;
          button.value = "play";
-         soundCarEngine.stop();
-         soundElectricEngine.stop();
+
+         if (isElectricEngine) {
+            soundElectricEngine.stop();
+         } else {
+            soundCarEngine.stop();
+         }
       }
 
    </script>
@@ -436,6 +462,8 @@
 
       <input type="range" id="input_car_engine_throttle" name="input_car_engine_throttle" min="0" max="100" value="0">
       <label for="input_car_engine_throttle" id="label_car_engine_throttle">Throttle</label>
+      <input type="checkbox" id="electric_engine" name="electric_engine" checked />
+      <label for="electric_engine">Use electric engine</label>
       <input type="button" id="button_car_engine_sound" onclick="togglePlayCarEngineSound(this)" value="play"></input>
       Rpm: <span id="span_car_engine_rpm">0</span>
 

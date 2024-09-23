@@ -12,7 +12,7 @@ function mapRpmToFrequency(rpm) {
   const MIN_FREQ = 20; // Frequenza minima in Hz
   const MAX_FREQ = 2000; // Frequenza massima in Hz
   const EXPONENT = 0.75; // Esponente per la curva di frequenza (tra 0.5 e 1)
-  
+
   // Usiamo una funzione di potenza per un aumento più graduale
   const normalizedRpm = Math.min(rpm, MAX_RPM) / MAX_RPM;
   return MIN_FREQ + (MAX_FREQ - MIN_FREQ) * Math.pow(normalizedRpm, EXPONENT);

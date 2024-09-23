@@ -1,9 +1,20 @@
-const SAMPLING_RATE = 44100;
+const SAMPLING_RATE = 44100; // Standard audio digitale
+
 const SIN_RATIOS = [1, 1.5, 1.8];
 
 // Parametri del vibrato
 const VIBRATO_FREQUENCY = 5; // Frequenza del vibrato (Hz)
 const VIBRATO_AMPLITUDE = 30; // Ampiezza del vibrato (Hz)
+
+// Mappare RPM alla frequenza in modo non lineare ()
+function mapRpmToFrequency(rpm) {
+  const MAX_RPM = 7500; // Come descritto in engine.js
+  const MIN_FREQ = 20; // Frequenza minima in Hz
+  const MAX_FREQ = 20000; // Frequenza massima in Hz
+
+  const normalizedRpm = Math.min(rpm, MAX_RPM) / MAX_RPM;
+  return MIN_FREQ + (MAX_FREQ - MIN_FREQ) * Math.sqrt(normalizedRpm);
+}
 
 class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
   constructor() {
@@ -27,18 +38,19 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
 
   process(inputs, outputs, parameters) {
     const output = outputs[0];
-    const frequency = parameters.rpm;
+    const rpm = parameters.rpm;
 
     for (let channel = 0; channel < output.length; channel++) {
       const outputChannel = output[channel];
 
       for (let i = 0; i < outputChannel.length; i++) {
-        const currentFreq = frequency.length > 1 ? frequency[i] : frequency[0];
+        const currentRpm = rpm.length > 1 ? rpm[i] : rpm[0];
+        const baseFrequency = mapRpmToFrequency(currentRpm);
 
         // Calcolo della frequenza modulata (vibrato)
         const vibratoOffset =
           Math.sin(this.lfoPhase * 2 * Math.PI) * VIBRATO_AMPLITUDE;
-        const modulatedFreq = currentFreq + vibratoOffset;
+        const modulatedFreq = baseFrequency + vibratoOffset;
 
         // Somma delle sinusoidi con la frequenza modulata dal vibrato
         outputChannel[i] =

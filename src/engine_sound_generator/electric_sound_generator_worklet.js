@@ -70,7 +70,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
             return accumulator + Math.sin(phase * 2 * Math.PI); // Somma delle sinusoidi
           }, 0) / SIN_RATIOS.length; // Media delle sinusoidi
 
-        // Aggiunta del whine come offset alla frequenza base
+        // Aggiunta del whine come offset della frequenza base
         const whineFreq = baseFrequency + WHINE_OFFSET;
         sample += WHINE_AMPLITUDE * Math.sin(this.whinePhase * 2 * Math.PI);
 
@@ -83,7 +83,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
             PITCH_LOWERING_FACTOR /
             SAMPLING_RATE;
 
-          // Se la fase supera 1 (un ciclo completo), la resetto
+          // Se la fase supera 1 (ciclo completo), la resetto
           if (this[`phase${j}`] >= 1) {
             this[`phase${j}`] -= 1;
           }
@@ -95,7 +95,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
           this.whinePhase -= 1;
         }
 
-        // Aggiorno la fase del LFO (per il vibrato)
+        // Aggiorno la fase del LFO per il vibrato
         this.lfoPhase += VIBRATO_FREQUENCY / SAMPLING_RATE;
         if (this.lfoPhase >= 1) {
           this.lfoPhase -= 1;
@@ -103,7 +103,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
       }
     }
 
-    return true; // Continua l'elaborazione
+    return true;
   }
 }
 

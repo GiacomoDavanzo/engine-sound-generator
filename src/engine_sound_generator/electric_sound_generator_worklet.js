@@ -2,26 +2,25 @@ const SAMPLING_RATE = 44100; // Standard audio digitale
 
 const BASE_FREQUENCIES = [190, 380, 650, 985, 1225, 1960];
 
-const PITCH_LOWERING_FACTOR = 5; // Per legare la frequenza agli RPM
+const PITCH_LOWERING_FACTOR = 4; // Per legare la frequenza agli RPM
 
 // Parametri del vibrato
 const VIBRATO_FREQUENCY = 100; // Frequenza del vibrato (Hz)
 const VIBRATO_AMPLITUDE = 20; // Ampiezza del vibrato (Hz)
 
 // Parametri per il whine del motore elettrico
-const WHINE_OFFSET = 4800; // Offset in Hz per il whine
+const WHINE_OFFSET = 1700; // Offset in Hz per il whine
 const WHINE_AMPLITUDE = 0.05; // Ampiezza del whine (0-1)
 
 // Mappare RPM alla frequenza in modo non lineare
-function mapRpmToFrequency(rpm) {
+function mapRpmToFrequencyOffset(rpm) {
   const MAX_RPM = 10000; // Assumiamo questo come valore massimo di RPM
-  const MIN_FREQ = 20; // Frequenza minima in Hz
-  const MAX_FREQ = 2000; // Frequenza massima in Hz
-  const EXPONENT = 1; // Esponente per la curva di frequenza (tra 0.5 e 1)
+  const MAX_FREQ_OFFSET = 2000; // Massimo offset di frequenza in Hz
+  const EXPONENT = 0.5; // Esponente per la curva di frequenza (tra 0.5 e 1)
 
   // Usiamo una funzione di potenza per un aumento più graduale
   const normalizedRpm = Math.min(rpm, MAX_RPM) / MAX_RPM;
-  return MIN_FREQ + (MAX_FREQ - MIN_FREQ) * Math.pow(normalizedRpm, EXPONENT);
+  return MAX_FREQ_OFFSET * Math.pow(normalizedRpm, EXPONENT);
 }
 
 class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
@@ -54,29 +53,28 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
 
       for (let i = 0; i < outputChannel.length; i++) {
         const currentRpm = rpm.length > 1 ? rpm[i] : rpm[0];
-        const baseFrequency = mapRpmToFrequency(currentRpm);
+        const frequencyOffset = mapRpmToFrequencyOffset(currentRpm);
 
         // Calcolo della frequenza modulata (vibrato)
         const vibratoOffset =
           Math.sin(this.lfoPhase * 2 * Math.PI) * VIBRATO_AMPLITUDE;
-        const modulatedFreq = baseFrequency + vibratoOffset;
 
         // Somma delle sinusoidi con la frequenza modulata dal vibrato
         let sample =
           BASE_FREQUENCIES.reduce((accumulator, freq, index) => {
-            const adjustedFreq = (freq / BASE_FREQUENCIES[0]) * modulatedFreq;
+            const adjustedFreq = freq + frequencyOffset + vibratoOffset;
             return accumulator + Math.sin(this.phases[index] * 2 * Math.PI);
           }, 0) / BASE_FREQUENCIES.length; // Media delle sinusoidi
 
         // Aggiunta del whine come offset della frequenza base
-        const whineFreq = baseFrequency + WHINE_OFFSET;
+        const whineFreq = BASE_FREQUENCIES[0] + frequencyOffset + WHINE_OFFSET;
         sample += WHINE_AMPLITUDE * Math.sin(this.whinePhase * 2 * Math.PI);
 
         outputChannel[i] = sample;
 
         // Aggiorno tutte le fasi delle sinusoidi
         BASE_FREQUENCIES.forEach((freq, index) => {
-          const adjustedFreq = (freq / BASE_FREQUENCIES[0]) * modulatedFreq;
+          const adjustedFreq = freq + frequencyOffset + vibratoOffset;
           this.phases[index] +=
             adjustedFreq / PITCH_LOWERING_FACTOR / SAMPLING_RATE;
 

@@ -1,8 +1,8 @@
 const SAMPLING_RATE = 44100; // Standard audio digitale
 
-const SIN_RATIOS = [1, 1.8, 2.5, 10];
+const BASE_FREQUENCIES = [190, 380, 650, 985, 1225, 1960];
 
-const PITCH_LOWERING_FACTOR = 10; // Per legare la frequenza agli RPM
+const PITCH_LOWERING_FACTOR = 5; // Per legare la frequenza agli RPM
 
 // Parametri del vibrato
 const VIBRATO_FREQUENCY = 100; // Frequenza del vibrato (Hz)
@@ -31,9 +31,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
     this.whinePhase = 0; // Inizializza la fase del whine
 
     // Inizializza le fasi per ogni onda sinusoidale
-    for (let i = 1; i <= SIN_RATIOS.length; i++) {
-      this[`phase${i}`] = 0;
-    }
+    this.phases = BASE_FREQUENCIES.map(() => 0);
   }
 
   static get parameterDescriptors() {
@@ -65,10 +63,10 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
 
         // Somma delle sinusoidi con la frequenza modulata dal vibrato
         let sample =
-          SIN_RATIOS.reduce((accumulator, _, index) => {
-            const phase = this[`phase${index + 1}`];
-            return accumulator + Math.sin(phase * 2 * Math.PI); // Somma delle sinusoidi
-          }, 0) / SIN_RATIOS.length; // Media delle sinusoidi
+          BASE_FREQUENCIES.reduce((accumulator, freq, index) => {
+            const adjustedFreq = (freq / BASE_FREQUENCIES[0]) * modulatedFreq;
+            return accumulator + Math.sin(this.phases[index] * 2 * Math.PI);
+          }, 0) / BASE_FREQUENCIES.length; // Media delle sinusoidi
 
         // Aggiunta del whine come offset della frequenza base
         const whineFreq = baseFrequency + WHINE_OFFSET;
@@ -77,17 +75,16 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
         outputChannel[i] = sample;
 
         // Aggiorno tutte le fasi delle sinusoidi
-        for (let j = 1; j <= SIN_RATIOS.length; j++) {
-          this[`phase${j}`] +=
-            (modulatedFreq * SIN_RATIOS[j - 1]) /
-            PITCH_LOWERING_FACTOR /
-            SAMPLING_RATE;
+        BASE_FREQUENCIES.forEach((freq, index) => {
+          const adjustedFreq = (freq / BASE_FREQUENCIES[0]) * modulatedFreq;
+          this.phases[index] +=
+            adjustedFreq / PITCH_LOWERING_FACTOR / SAMPLING_RATE;
 
           // Se la fase supera 1 (ciclo completo), la resetto
-          if (this[`phase${j}`] >= 1) {
-            this[`phase${j}`] -= 1;
+          if (this.phases[index] >= 1) {
+            this.phases[index] -= 1;
           }
-        }
+        });
 
         // Aggiorno la fase del whine
         this.whinePhase += whineFreq / SAMPLING_RATE;

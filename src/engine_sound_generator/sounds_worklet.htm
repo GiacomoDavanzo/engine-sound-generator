@@ -432,13 +432,13 @@
          let intakeVolume = document.getElementById("input_car_engine_volume_intake");
 
          if (isElectricEngine) {
-            button.value = "⛽️ Motore a combustione"
+            button.value = "⚡️"
 
             engineBlockVibrations.setAttribute("disabled", "true");
             outletVolume.setAttribute("disabled", "true");
             intakeVolume.setAttribute("disabled", "true");
          } else {
-            button.value = '⚡️ Motore elettrico'
+            button.value = '⛽️'
 
             engineBlockVibrations.removeAttribute("disabled");
             outletVolume.removeAttribute("disabled");
@@ -492,11 +492,12 @@
          Rpm <br/>
          <span id="span_car_engine_rpm">0</span>
 
-         <input type="button" id="switch_to_electric" onclick="toggleElectricEngine()"
-            value="⛽️ Motore a combustione" />
-
-         <input type="button" id="button_car_engine_sound" onclick="togglePlayCarEngineSound(this)"
-            value="Accensione"></input>
+         <div id="buttons">
+            <input type="button" id="switch_to_electric" onclick="toggleElectricEngine()"
+               value="⚡️" />
+            <input type="button" id="button_car_engine_sound" onclick="togglePlayCarEngineSound(this)"
+               value="Accensione"></input>
+         </div>
       </fieldset>
 
       <canvas id="canvas" style="display: none;" height="350px" width="750px"></canvas>

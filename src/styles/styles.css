@@ -67,3 +67,8 @@ input {
 #button_car_engine_sound.running:hover {
     background-color: rgb(127, 0, 0);
 }
+
+#span_car_engine_rpm {
+    font-size: xx-large;
+    font-weight: bold;
+}

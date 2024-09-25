@@ -5,6 +5,7 @@
 
    <meta charset=utf-8>
    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="../styles/styles.css">
 
    <title>Sounds Worklet</title>
 
@@ -206,7 +207,7 @@
       }
 
       function playSound() {
-         labelCarEngineRpm.innerHTML = engine.rpm;
+         labelCarEngineRpm.innerHTML = Math.trunc(engine.rpm);
          window.setTimeout(playSound, 25);
       }
 
@@ -250,8 +251,7 @@
       var scene;
       var canvas;
       var canvasAudioAnalyseWidth = 2000;
-      //var canvasAudioAnalyseHeight = 125;
-      var canvasAudioAnalyseHeight = 250;
+      var canvasAudioAnalyseHeight = 700;
       var canvasSpectogram;
       var canvasSpectogramContext;
       var renderer;
@@ -263,7 +263,7 @@
       var soundCarEngine;
 
       var isElectricEngine = true;
-      var soundElectricEngine
+      var soundElectricEngine;
 
       var audioContext;
       var audioAnalyser;
@@ -299,28 +299,28 @@
          // input event listener for the car engine sound
          let inputCarEngineVolume = document.getElementById("input_car_engine_volume");
          inputCarEngineVolume.addEventListener("input", updateCarEngineVolume);
-         labelCarEngineVolume = document.getElementById("label_car_engine_volume");
-         labelCarEngineVolume.innerHTML = "Volume " + inputCarEngineVolume.value + " %";
+         /* labelCarEngineVolume = document.getElementById("label_car_engine_volume");
+         labelCarEngineVolume.innerHTML = "Volume " + inputCarEngineVolume.value + " %"; */
 
          let inputCarEngineVolumeIntake = document.getElementById("input_car_engine_volume_intake");
          inputCarEngineVolumeIntake.addEventListener("input", updateCarEngineVolumeIntake);
-         labelCarEngineVolumeIntake = document.getElementById("label_car_engine_volume_intake");
-         labelCarEngineVolumeIntake.innerHTML = "Intake Volume " + inputCarEngineVolumeIntake.value + " %";
+         /* labelCarEngineVolumeIntake = document.getElementById("label_car_engine_volume_intake");
+         labelCarEngineVolumeIntake.innerHTML = "Iniettori " + inputCarEngineVolumeIntake.value + " %"; */
 
          let inputCarEngineVolumeEngineBlockVibrations = document.getElementById("input_car_engine_volume_engine_block_vibrations");
          inputCarEngineVolumeEngineBlockVibrations.addEventListener("input", updateCarEngineVolumeEngineBlockVibrations);
-         labelCarEngineVolumeEngineBlockVibrations = document.getElementById("label_car_engine_volume_engine_block_vibrations");
-         labelCarEngineVolumeEngineBlockVibrations.innerHTML = "Engine Block Vibrations Volume " + inputCarEngineVolumeEngineBlockVibrations.value + " %";
+         /* labelCarEngineVolumeEngineBlockVibrations = document.getElementById("label_car_engine_volume_engine_block_vibrations");
+         labelCarEngineVolumeEngineBlockVibrations.innerHTML = "Vibrazioni blocco motore " + inputCarEngineVolumeEngineBlockVibrations.value + " %"; */
 
          let inputCarEngineVolumeOutlet = document.getElementById("input_car_engine_volume_outlet");
          inputCarEngineVolumeOutlet.addEventListener("input", updateCarEngineVolumeOutlet);
-         labelCarEngineVolumeOutlet = document.getElementById("label_car_engine_volume_outlet");
-         labelCarEngineVolumeOutlet.innerHTML = "Outlet Volume " + inputCarEngineVolumeOutlet.value + " %";
+         /* labelCarEngineVolumeOutlet = document.getElementById("label_car_engine_volume_outlet");
+         labelCarEngineVolumeOutlet.innerHTML = "Outlet Volume " + inputCarEngineVolumeOutlet.value + " %"; */
 
          let inputCarEngineThrottle = document.getElementById("input_car_engine_throttle");
          inputCarEngineThrottle.addEventListener("input", updateCarEngineThrottle);
-         labelCarEngineThrottle = document.getElementById("label_car_engine_throttle");
-         labelCarEngineThrottle.innerHTML = "Throttle  " + inputCarEngineThrottle.value + " %";
+         /* labelCarEngineThrottle = document.getElementById("label_car_engine_throttle");
+         labelCarEngineThrottle.innerHTML = "Throttle  " + inputCarEngineThrottle.value + " %"; */
 
          let inputEngineType = document.getElementById("electric_engine");
          inputEngineType.addEventListener("change", () => {
@@ -351,17 +351,17 @@
 
       async function togglePlaySineWaveSound(button) {
          await audioContext.resume();
-         if (button.value === "play") {
-            button.value = "stop";
+         if (button.value === "Accensione") {
+            button.value = "Stop";
             playSoundSineWave();
             return;
          }
-         button.value = "play";
+         button.value = "Accensione";
          soundSineWave.stop();
       }
 
       function updateCarEngineVolume(event) {
-         labelCarEngineVolume.innerHTML = "Volume " + event.target.value + " %";
+         /* labelCarEngineVolume.innerHTML = "Volume " + event.target.value + " %"; */
          let gainNode = soundCarEngine.gain;
          gainNode.gain.value = 0.01 * event.target.value;
 
@@ -370,25 +370,25 @@
       }
 
       function updateCarEngineVolumeIntake(event) {
-         labelCarEngineVolumeIntake.innerHTML = "Intake Volume " + event.target.value + " %";
+         /* labelCarEngineVolumeIntake.innerHTML = "Iniettori " + event.target.value + " %"; */
          let gainNode = soundCarEngine.gainIntake;
          gainNode.gain.value = 0.01 * event.target.value;
       }
 
       function updateCarEngineVolumeEngineBlockVibrations(event) {
-         labelCarEngineVolumeEngineBlockVibrations.innerHTML = "Engine Block Vibrations Volume " + event.target.value + " %";
+         /* labelCarEngineVolumeEngineBlockVibrations.innerHTML = "Vibrazioni blocco motore " + event.target.value + " %"; */
          let gainNode = soundCarEngine.gainEngineBlockVibrations;
          gainNode.gain.value = 0.01 * event.target.value;
       }
 
       function updateCarEngineVolumeOutlet(event) {
-         labelCarEngineVolumeOutlet.innerHTML = "Outlet Volume " + event.target.value + " %";
+         /* labelCarEngineVolumeOutlet.innerHTML = "Outlet Volume " + event.target.value + " %"; */
          let gainNode = soundCarEngine.gainOutlet;
          gainNode.gain.value = 0.01 * event.target.value;
       }
 
       function updateCarEngineThrottle(event) {
-         labelCarEngineThrottle.innerHTML = "Throttle " + event.target.value + " %";
+         /* labelCarEngineThrottle.innerHTML = "Throttle " + event.target.value + " %"; */
          engine.throttle = 0.01 * event.target.value;
          let throttleParam = soundCarEngine.worklet.parameters.get('throttle');
          throttleParam.value = engine.throttle;
@@ -396,10 +396,10 @@
 
       async function togglePlayCarEngineSound(button) {
          await audioContext.resume();
-         if (button.value === "play") {
+         if (button.value === "Accensione") {
 
             engine.start();
-            button.value = "stop";
+            button.value = "Stop";
 
             if (isElectricEngine) {
                playSoundElectricEngine();
@@ -412,13 +412,20 @@
 
          engine.starting = false;
          engine.started = false;
-         button.value = "play";
+         button.value = "Accensione";
 
          if (isElectricEngine) {
             soundElectricEngine.stop();
          } else {
             soundCarEngine.stop();
          }
+      }
+
+      function toggleElectricEngine() {
+         isElectricEngine = !isElectricEngine;
+
+
+
       }
 
    </script>
@@ -440,37 +447,47 @@
       <input type="range" id="input_sine_wave_frequency" name="input_sine_wave_frequency" min="20" max="20000"
          value="440"> <label for="input_sine_wave_frequency" id="label_sine_wave_frequency">Frequency</label>
       <input type="button" id="button_play_sine_wave_sound" onclick="togglePlaySineWaveSound(this)"
-         value="play"></input>
+         value="Accensione"></input>
 
    </fieldset>
 
-   <fieldset>
-      <legend>Car engine</legend>
+   <div id="mainRow">
+      <fieldset>
+         <legend>Car engine</legend>
+         <label for="input_car_engine_volume" id="label_car_engine_volume">Volume</label>
+         <input type="range" id="input_car_engine_volume" name="input_car_engine_volume" min="0" max="100" value="80">
+         <label for="input_car_engine_volume_intake" id="label_car_engine_volume_intake">Iniettori</label>
+         <input type="range" id="input_car_engine_volume_intake" name="input_car_engine_volume_intake" min="0" max="100"
+            value="100">
+         <label for="input_car_engine_volume_engine_block_vibrations"
+            id="label_car_engine_volume_engine_block_vibrations">Vibrazioni blocco motore</label>
+         <input type="range" id="input_car_engine_volume_engine_block_vibrations"
+            name="input_car_engine_volume_engine_block_vibrations" min="0" max="100" value="100">
+         <label for="input_car_engine_volume_outlet" id="label_car_engine_volume_outlet">Outlet
+            Volume</label>
+         <input type="range" id="input_car_engine_volume_outlet" name="input_car_engine_volume_outlet" min="0" max="100"
+            value="100">
+         <label for="input_car_engine_throttle" id="label_car_engine_throttle">Throttle</label>
+         <input type="range" id="input_car_engine_throttle" name="input_car_engine_throttle" min="0" max="100"
+            value="0">
+         <input type="checkbox" id="electric_engine" name="electric_engine" checked />
+         <label for="electric_engine">Use electric engine</label>
 
-      <input type="range" id="input_car_engine_volume" name="input_car_engine_volume" min="0" max="100" value="80">
-      <label for="input_car_engine_volume" id="label_car_engine_volume">Volume</label>
-      <input type="range" id="input_car_engine_volume_intake" name="input_car_engine_volume_intake" min="0" max="100"
-         value="100"> <label for="input_car_engine_volume_intake" id="label_car_engine_volume_intake">Intake
-         Volume</label>
-      <input type="range" id="input_car_engine_volume_engine_block_vibrations"
-         name="input_car_engine_volume_engine_block_vibrations" min="0" max="100" value="100"> <label
-         for="input_car_engine_volume_engine_block_vibrations"
-         id="label_car_engine_volume_engine_block_vibrations">Engine Block Vibration Volume</label>
-      <input type="range" id="input_car_engine_volume_outlet" name="input_car_engine_volume_outlet" min="0" max="100"
-         value="100"> <label for="input_car_engine_volume_outlet" id="label_car_engine_volume_outlet">Outlet
-         Volume</label>
+         Rpm: <span id="span_car_engine_rpm">0</span>
 
-      <input type="range" id="input_car_engine_throttle" name="input_car_engine_throttle" min="0" max="100" value="0">
-      <label for="input_car_engine_throttle" id="label_car_engine_throttle">Throttle</label>
-      <input type="checkbox" id="electric_engine" name="electric_engine" checked />
-      <label for="electric_engine">Use electric engine</label>
-      <input type="button" id="button_car_engine_sound" onclick="togglePlayCarEngineSound(this)" value="play"></input>
-      Rpm: <span id="span_car_engine_rpm">0</span>
+         &#9889; Motore elettrico
 
-   </fieldset>
+         <input type="button" id="switch_to_electric" onclick="toggleElectricEngine()"
+         value="Accensione" />
 
-   <canvas id="canvas" style="display: none;" height="350px" width="750px"></canvas>
-   <canvas id="canvas_spectogram" height="250px" width="100%"></canvas>
+         <input type="button" id="button_car_engine_sound" onclick="togglePlayCarEngineSound(this)"
+            value="Accensione"></input>
+      </fieldset>
+
+      <canvas id="canvas" style="display: none;" height="350px" width="750px"></canvas>
+
+      <canvas id="canvas_spectogram" height="700px" width="100%"></canvas>
+   </div>
 
 
 </body>

@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+body {
+    font-family: 'Inter';
+}
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+    width: 15em;
+}
+
+#mainRow {
+    display: flex;
+    flex-direction: row;
+}
+
+input {
+    margin-bottom: 20px;
+}
+
+#button_car_engine_sound {
+    margin-top: auto;
+    height: 3em;
+    background-color: green;
+    color: white;
+    border: chartreuse;
+    border-radius: 3px;
+
+    font-weight: bold;
+    font-size: medium;
+}
+
+#button_car_engine_sound:focus {
+    outline: none;
+}

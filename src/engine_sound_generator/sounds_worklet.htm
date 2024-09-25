@@ -322,11 +322,6 @@
          /* labelCarEngineThrottle = document.getElementById("label_car_engine_throttle");
          labelCarEngineThrottle.innerHTML = "Throttle  " + inputCarEngineThrottle.value + " %"; */
 
-         let inputEngineType = document.getElementById("electric_engine");
-         inputEngineType.addEventListener("change", () => {
-            isElectricEngine = inputEngineType.checked
-         });
-
          labelCarEngineRpm = document.getElementById("span_car_engine_rpm");
 
          window.moduleLoad();
@@ -400,6 +395,9 @@
 
             engine.start();
             button.value = "Stop";
+            button.classList.add("running")
+
+            document.getElementById('switch_to_electric').disabled = true;
 
             if (isElectricEngine) {
                playSoundElectricEngine();
@@ -414,6 +412,9 @@
          engine.started = false;
          button.value = "Accensione";
 
+         document.getElementById('switch_to_electric').disabled = false;
+         button.classList.remove("running")
+
          if (isElectricEngine) {
             soundElectricEngine.stop();
          } else {
@@ -424,7 +425,25 @@
       function toggleElectricEngine() {
          isElectricEngine = !isElectricEngine;
 
+         let button = document.getElementById("switch_to_electric");
 
+         let engineBlockVibrations = document.getElementById("input_car_engine_volume_engine_block_vibrations");
+         let outletVolume = document.getElementById("input_car_engine_volume_outlet");
+         let intakeVolume = document.getElementById("input_car_engine_volume_intake");
+
+         if (isElectricEngine) {
+            button.value = "⛽️ Motore a combustione"
+
+            engineBlockVibrations.setAttribute("disabled", "true");
+            outletVolume.setAttribute("disabled", "true");
+            intakeVolume.setAttribute("disabled", "true");
+         } else {
+            button.value = '⚡️ Motore elettrico'
+
+            engineBlockVibrations.removeAttribute("disabled");
+            outletVolume.removeAttribute("disabled");
+            intakeVolume.removeAttribute("disabled");
+         }
 
       }
 
@@ -463,22 +482,17 @@
             id="label_car_engine_volume_engine_block_vibrations">Vibrazioni blocco motore</label>
          <input type="range" id="input_car_engine_volume_engine_block_vibrations"
             name="input_car_engine_volume_engine_block_vibrations" min="0" max="100" value="100">
-         <label for="input_car_engine_volume_outlet" id="label_car_engine_volume_outlet">Outlet
-            Volume</label>
+         <label for="input_car_engine_volume_outlet" id="label_car_engine_volume_outlet">Scarico</label>
          <input type="range" id="input_car_engine_volume_outlet" name="input_car_engine_volume_outlet" min="0" max="100"
             value="100">
-         <label for="input_car_engine_throttle" id="label_car_engine_throttle">Throttle</label>
+         <label for="input_car_engine_throttle" id="label_car_engine_throttle">Acceleratore</label>
          <input type="range" id="input_car_engine_throttle" name="input_car_engine_throttle" min="0" max="100"
             value="0">
-         <input type="checkbox" id="electric_engine" name="electric_engine" checked />
-         <label for="electric_engine">Use electric engine</label>
 
          Rpm: <span id="span_car_engine_rpm">0</span>
 
-         &#9889; Motore elettrico
-
          <input type="button" id="switch_to_electric" onclick="toggleElectricEngine()"
-         value="Accensione" />
+            value="⛽️ Motore a combustione" />
 
          <input type="button" id="button_car_engine_sound" onclick="togglePlayCarEngineSound(this)"
             value="Accensione"></input>

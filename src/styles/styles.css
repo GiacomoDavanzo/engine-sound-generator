@@ -19,18 +19,51 @@ input {
     margin-bottom: 20px;
 }
 
-#button_car_engine_sound {
+#switch_to_electric {
     margin-top: auto;
+    height: 3em;
+    cursor: pointer;
+    background-color: white;
+    border: 2px solid;
+    border-radius: 4px;
+
+    transition: 0.2s;
+
+    font-weight: bold;
+    font-size: small;
+}
+
+#switch_to_electric:disabled {
+    cursor: not-allowed;
+}
+
+#button_car_engine_sound {
     height: 3em;
     background-color: green;
     color: white;
     border: chartreuse;
-    border-radius: 3px;
+    border-radius: 4px;
+    margin-bottom: 0;
 
     font-weight: bold;
     font-size: medium;
+
+    cursor: pointer;
+    transition: 0.2s;
 }
 
 #button_car_engine_sound:focus {
     outline: none;
+}
+
+#button_car_engine_sound:hover {
+    background-color: rgb(0, 90, 3);
+}
+
+#button_car_engine_sound.running {
+    background-color: rgb(214, 0, 0);
+}
+
+#button_car_engine_sound.running:hover {
+    background-color: rgb(127, 0, 0);
 }

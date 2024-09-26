@@ -472,29 +472,27 @@
 
    <div id="mainRow">
       <fieldset>
-         <legend>Car engine</legend>
          <label for="input_car_engine_volume" id="label_car_engine_volume">Volume</label>
          <input type="range" id="input_car_engine_volume" name="input_car_engine_volume" min="0" max="100" value="80">
          <label for="input_car_engine_volume_intake" id="label_car_engine_volume_intake">Iniettori</label>
-         <input type="range" id="input_car_engine_volume_intake" name="input_car_engine_volume_intake" min="0" max="100"
-            value="100">
+         <input disabled="true" type="range" id="input_car_engine_volume_intake" name="input_car_engine_volume_intake"
+            min="0" max="100" value="100">
          <label for="input_car_engine_volume_engine_block_vibrations"
             id="label_car_engine_volume_engine_block_vibrations">Vibrazioni blocco motore</label>
-         <input type="range" id="input_car_engine_volume_engine_block_vibrations"
+         <input disabled="true" type="range" id="input_car_engine_volume_engine_block_vibrations"
             name="input_car_engine_volume_engine_block_vibrations" min="0" max="100" value="100">
          <label for="input_car_engine_volume_outlet" id="label_car_engine_volume_outlet">Scarico</label>
-         <input type="range" id="input_car_engine_volume_outlet" name="input_car_engine_volume_outlet" min="0" max="100"
-            value="100">
+         <input disabled="true" type="range" id="input_car_engine_volume_outlet" name="input_car_engine_volume_outlet"
+            min="0" max="100" value="100">
          <label for="input_car_engine_throttle" id="label_car_engine_throttle">Acceleratore</label>
          <input type="range" id="input_car_engine_throttle" name="input_car_engine_throttle" min="0" max="100"
             value="0">
 
-         Rpm <br/>
+         Rpm <br />
          <span id="span_car_engine_rpm">0</span>
 
          <div id="buttons">
-            <input type="button" id="switch_to_electric" onclick="toggleElectricEngine()"
-               value="⚡️" />
+            <input type="button" id="switch_to_electric" onclick="toggleElectricEngine()" value="⚡️" />
             <input type="button" id="button_car_engine_sound" onclick="togglePlayCarEngineSound(this)"
                value="Accensione"></input>
          </div>

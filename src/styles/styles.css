@@ -8,6 +8,7 @@ fieldset {
     display: flex;
     flex-direction: column;
     width: 15em;
+    padding-top: 20px;
 }
 
 #mainRow {
@@ -28,14 +29,14 @@ input {
     height: 3rem;
     width: 3em;
     cursor: pointer;
-    background-color: white;
+    background-color: rgb(194, 194, 194);
     border: 2px solid;
     border-radius: 4px;
 
     transition: 0.2s;
 
     font-weight: bold;
-    font-size: medium;
+    font-size: larger;
 }
 
 #switch_to_electric:disabled {

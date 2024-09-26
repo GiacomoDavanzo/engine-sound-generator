@@ -5,20 +5,25 @@ const BASE_FREQUENCIES = [190, 380, 650, 985, 1225, 1960];
 const PITCH_LOWERING_FACTOR = 6; // Abbasso il pitch, per poter legare la frequenza agli RPM
 
 // Parametri del vibrato
-const VIBRATO_FREQUENCY = 100; // Frequenza del vibrato (Hz)
 const VIBRATO_AMPLITUDE = 20; // Ampiezza del vibrato (Hz)
+
+// Parametri LFO
+const MIN_LFO_FREQUENCY = 3; // Frequenza minima dell'LFO (Hz)
+const MAX_LFO_FREQUENCY = 100; // Frequenza massima dell'LFO (Hz)
+const MIN_LFO_RPM = 700; // RPM al di sotto del quale si usa MIN_LFO_FREQUENCY
 
 // "Whine" del motore elettrico
 const WHINE_OFFSET = 1700; // Offset rispetto alla prima BASE_FREQUENCY
-const WHINE_AMPLITUDE = 0.01;
+const WHINE_AMPLITUDE = 0.005;
 
 // Attenuazione del volume ad alti RPM
 const ATTENUATION_START_RPM = 7000;
 const ATTENUATION_END_RPM = 7500;
 
+const MAX_RPM = 7500;
+
 // Mappare RPM alla frequenza in modo non lineare
 function mapRpmToFrequencyOffset(rpm) {
-  const MAX_RPM = 7500;
   const MAX_FREQ_OFFSET = 1000;
   const EXPONENT = 0.9;
 
@@ -41,6 +46,18 @@ function calculateVolumeAttenuation(rpm) {
         (ATTENUATION_END_RPM - ATTENUATION_START_RPM)
     );
   }
+}
+
+// Cambiare la frequenza dell'LFO sulla base degli RPM
+function mapRpmToLfoFrequency(rpm) {
+  if (rpm <= MIN_LFO_RPM) {
+    return MIN_LFO_FREQUENCY;
+  }
+  const normalizedRpm =
+    (Math.min(rpm, MAX_RPM) - MIN_LFO_RPM) / (MAX_RPM - MIN_LFO_RPM);
+  return (
+    MIN_LFO_FREQUENCY + (MAX_LFO_FREQUENCY - MIN_LFO_FREQUENCY) * normalizedRpm
+  );
 }
 
 class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
@@ -76,6 +93,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
 
         const frequencyOffset = mapRpmToFrequencyOffset(currentRpm);
         const volumeAttenuation = calculateVolumeAttenuation(currentRpm);
+        const lfoFrequency = mapRpmToLfoFrequency(currentRpm);
 
         // Calcolo della frequenza modulata (vibrato)
         const vibratoOffset =
@@ -113,8 +131,8 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
           this.whinePhase -= 1;
         }
 
-        // Aggiornamento della fase del LFO
-        this.lfoPhase += VIBRATO_FREQUENCY / SAMPLING_RATE;
+        // Aggiornamento della fase del LFO con frequenza variabile
+        this.lfoPhase += lfoFrequency / SAMPLING_RATE;
         if (this.lfoPhase >= 1) {
           this.lfoPhase -= 1;
         }

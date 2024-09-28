@@ -2,7 +2,7 @@ const SAMPLING_RATE = 44100; // Standard audio digitale
 
 const BASE_FREQUENCIES = [1, 190, 380, 650, 985, 1225, 1960];
 
-const PITCH_LOWERING_FACTOR = 4; // Abbasso il pitch, per poter legare la frequenza agli RPM
+const PITCH_LOWERING_FACTOR = 5; // Abbasso il pitch, per poter legare la frequenza agli RPM
 
 // Parametri LFO
 const MIN_LFO_FREQUENCY = 5; // Frequenza minima dell'LFO (Hz)
@@ -20,6 +20,8 @@ const ATTENUATION_START_RPM = 6900;
 const ATTENUATION_END_RPM = 7300;
 
 const MAX_RPM = 7500;
+
+const WAFE_FUNC = customEnvelopeWave; // Costante utile per cambiare l'onda
 
 // Mappare RPM alla frequenza in modo non lineare
 function mapRpmToFrequencyOffset(rpm) {
@@ -67,13 +69,34 @@ function mapRpmToLfoAmplitude(rpm) {
   );
 }
 
+// Funzione per generare un'onda a dente di sega
+function sawtooth(phase) {
+  return 2 * (phase - Math.floor(0.5 + phase));
+}
+
+// Funzione per generare un'onda quadra
+function squareWave(phase) {
+  return phase % 1 < 0.5 ? 1 : -1;
+}
+
+function sinWave(phase) {
+  return Math.sin(2 * Math.PI * phase);
+}
+
+// Funzione per generare un'onda con inviluppo personalizzato
+function customEnvelopeWave(phase) {
+  const x = 2 * Math.PI * phase;
+  const sinePart = Math.sin(x);
+  const flatteningFactor = Math.pow(Math.cos(x / 2), 2);
+  return sinePart * flatteningFactor;
+}
+
 class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
   constructor() {
+    // inizializzo le fasi
     super();
-    // Inizializzo le fasi di LFO, whine e sinusoidi
     this.lfoPhase = 0;
     this.whinePhase = 0;
-
     this.phases = BASE_FREQUENCIES.map(() => 0);
   }
 
@@ -105,24 +128,24 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
 
         // Calcolo della frequenza modulata (vibrato)
         const vibratoOffset =
-          Math.sin(this.lfoPhase * 2 * Math.PI) * lfoAmplitude;
+          WAFE_FUNC(this.lfoPhase) * lfoAmplitude;
 
-        // Somma delle sinusoidi con la frequenza modulata dal vibrato
+        // Somma delle onde a dente di sega con la frequenza modulata dal vibrato
         let sample =
           BASE_FREQUENCIES.reduce(
             (accumulator, _, index) =>
-              accumulator + Math.sin(this.phases[index] * 2 * Math.PI),
+              accumulator + WAFE_FUNC(this.phases[index]),
             0
-          ) / BASE_FREQUENCIES.length; // Media delle sinusoidi
+          ) / BASE_FREQUENCIES.length; // Media delle onde a dente di sega
 
         // Aggiunta del whine come offset della frequenza base
         const whineFreq = BASE_FREQUENCIES[0] + frequencyOffset + WHINE_OFFSET;
-        sample += WHINE_AMPLITUDE * Math.sin(this.whinePhase * 2 * Math.PI);
+        sample += WHINE_AMPLITUDE * WAFE_FUNC(this.whinePhase);
 
         // Attenuazione del volume
         outputChannel[i] = sample * volumeAttenuation;
 
-        // Aggiornamento delle fasi delle sinusoidi
+        // Aggiornamento delle fasi delle onde a dente di sega
         BASE_FREQUENCIES.forEach((freq, index) => {
           const adjustedFreq = freq + frequencyOffset + vibratoOffset;
           this.phases[index] +=

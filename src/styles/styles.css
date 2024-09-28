@@ -4,6 +4,14 @@ body {
     font-family: 'Inter';
 }
 
+canvas {
+    display: block;
+ }
+
+ #canvas {
+    margin: 0 auto;
+ }
+
 fieldset {
     display: flex;
     flex-direction: column;

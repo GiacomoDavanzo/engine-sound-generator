@@ -1,24 +1,23 @@
 const SAMPLING_RATE = 44100; // Standard audio digitale
 
-const BASE_FREQUENCIES = [190, 380, 650, 985, 1225, 1960];
+const BASE_FREQUENCIES = [1, 190, 380, 650, 985, 1225, 1960];
 
-const PITCH_LOWERING_FACTOR = 6; // Abbasso il pitch, per poter legare la frequenza agli RPM
-
-// Parametri del vibrato
-const VIBRATO_AMPLITUDE = 20; // Ampiezza del vibrato (Hz)
+const PITCH_LOWERING_FACTOR = 4; // Abbasso il pitch, per poter legare la frequenza agli RPM
 
 // Parametri LFO
-const MIN_LFO_FREQUENCY = 3; // Frequenza minima dell'LFO (Hz)
+const MIN_LFO_FREQUENCY = 5; // Frequenza minima dell'LFO (Hz)
 const MAX_LFO_FREQUENCY = 100; // Frequenza massima dell'LFO (Hz)
 const MIN_LFO_RPM = 700; // RPM al di sotto del quale si usa MIN_LFO_FREQUENCY
+const MIN_LFO_AMPLITUDE = 30; // Ampiezza minima del vibrato (Hz)
+const MAX_LFO_AMPLITUDE = 20; // Ampiezza massima del vibrato (Hz)
 
 // "Whine" del motore elettrico
 const WHINE_OFFSET = 1700; // Offset rispetto alla prima BASE_FREQUENCY
 const WHINE_AMPLITUDE = 0.005;
 
 // Attenuazione del volume ad alti RPM
-const ATTENUATION_START_RPM = 7000;
-const ATTENUATION_END_RPM = 7500;
+const ATTENUATION_START_RPM = 6900;
+const ATTENUATION_END_RPM = 7300;
 
 const MAX_RPM = 7500;
 
@@ -48,7 +47,7 @@ function calculateVolumeAttenuation(rpm) {
   }
 }
 
-// Cambiare la frequenza dell'LFO sulla base degli RPM
+// Funzione per mappare RPM alla frequenza dell'LFO
 function mapRpmToLfoFrequency(rpm) {
   if (rpm <= MIN_LFO_RPM) {
     return MIN_LFO_FREQUENCY;
@@ -57,6 +56,14 @@ function mapRpmToLfoFrequency(rpm) {
     (Math.min(rpm, MAX_RPM) - MIN_LFO_RPM) / (MAX_RPM - MIN_LFO_RPM);
   return (
     MIN_LFO_FREQUENCY + (MAX_LFO_FREQUENCY - MIN_LFO_FREQUENCY) * normalizedRpm
+  );
+}
+
+// Mappa gli RPM all'ampiezza dell'LFO
+function mapRpmToLfoAmplitude(rpm) {
+  const normalizedRpm = Math.min(rpm, MAX_RPM) / MAX_RPM;
+  return (
+    MIN_LFO_AMPLITUDE + (MAX_LFO_AMPLITUDE - MIN_LFO_AMPLITUDE) * normalizedRpm
   );
 }
 
@@ -94,17 +101,19 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
         const frequencyOffset = mapRpmToFrequencyOffset(currentRpm);
         const volumeAttenuation = calculateVolumeAttenuation(currentRpm);
         const lfoFrequency = mapRpmToLfoFrequency(currentRpm);
+        const lfoAmplitude = mapRpmToLfoAmplitude(currentRpm);
 
         // Calcolo della frequenza modulata (vibrato)
         const vibratoOffset =
-          Math.sin(this.lfoPhase * 2 * Math.PI) * VIBRATO_AMPLITUDE;
+          Math.sin(this.lfoPhase * 2 * Math.PI) * lfoAmplitude;
 
         // Somma delle sinusoidi con la frequenza modulata dal vibrato
         let sample =
-          BASE_FREQUENCIES.reduce((accumulator, freq, index) => {
-            const adjustedFreq = freq + frequencyOffset + vibratoOffset;
-            return accumulator + Math.sin(this.phases[index] * 2 * Math.PI);
-          }, 0) / BASE_FREQUENCIES.length; // Media delle sinusoidi
+          BASE_FREQUENCIES.reduce(
+            (accumulator, _, index) =>
+              accumulator + Math.sin(this.phases[index] * 2 * Math.PI),
+            0
+          ) / BASE_FREQUENCIES.length; // Media delle sinusoidi
 
         // Aggiunta del whine come offset della frequenza base
         const whineFreq = BASE_FREQUENCIES[0] + frequencyOffset + WHINE_OFFSET;

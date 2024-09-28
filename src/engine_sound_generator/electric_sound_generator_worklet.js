@@ -26,12 +26,11 @@ const WAFE_FUNC = customEnvelopeWave; // Costante utile per cambiare l'onda
 
 // Mappare RPM alla frequenza in modo non lineare
 function mapRpmToFrequencyOffset(rpm) {
-  const MAX_FREQ_OFFSET = 1000;
-  const EXPONENT = 0.9;
+  const MAX_FREQ_OFFSET = 1300;
 
   // Usiamo una funzione di potenza per un aumento più graduale
   const normalizedRpm = Math.min(rpm, MAX_RPM) / MAX_RPM;
-  return MAX_FREQ_OFFSET * Math.pow(normalizedRpm, EXPONENT);
+  return MAX_FREQ_OFFSET * normalizedRpm;
 }
 
 // Funzione per calcolare l'attenuazione del volume basata sugli RPM
@@ -56,7 +55,8 @@ function mapRpmToLfoFrequency(rpm) {
     return MIN_LFO_FREQUENCY;
   }
   const normalizedRpm =
-    (Math.min(rpm, MAX_RPM) - IDLING_ENGINE_RPM) / (MAX_RPM - IDLING_ENGINE_RPM);
+    (Math.min(rpm, MAX_RPM) - IDLING_ENGINE_RPM) /
+    (MAX_RPM - IDLING_ENGINE_RPM);
   return (
     MIN_LFO_FREQUENCY + (MAX_LFO_FREQUENCY - MIN_LFO_FREQUENCY) * normalizedRpm
   );
@@ -102,7 +102,8 @@ function mapRpmToNoiseAmplitude(rpm) {
     return 0; // Nessun rumore bianco al minimo
   }
   const normalizedRpm =
-    (Math.min(rpm, MAX_RPM) - IDLING_ENGINE_RPM) / (MAX_RPM - IDLING_ENGINE_RPM);
+    (Math.min(rpm, MAX_RPM) - IDLING_ENGINE_RPM) /
+    (MAX_RPM - IDLING_ENGINE_RPM);
   return normalizedRpm; // Aumenta gradualmente fino a 1
 }
 

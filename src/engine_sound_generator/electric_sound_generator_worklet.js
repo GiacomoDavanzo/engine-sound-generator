@@ -96,6 +96,16 @@ function generateWhiteNoise() {
   return Math.random() * 2 - 1;
 }
 
+// Funzione per mappare gli RPM all'ampiezza del rumore bianco
+function mapRpmToNoiseAmplitude(rpm) {
+  if (rpm <= IDLING_ENGINE_RPM) {
+    return 0; // Nessun rumore bianco al minimo
+  }
+  const normalizedRpm =
+    (Math.min(rpm, MAX_RPM) - IDLING_ENGINE_RPM) / (MAX_RPM - IDLING_ENGINE_RPM);
+  return normalizedRpm; // Aumenta gradualmente fino a 1
+}
+
 class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
   constructor() {
     // inizializzo le fasi
@@ -104,7 +114,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
     this.whinePhase = 0;
     this.phases = BASE_FREQUENCIES.map(() => 0);
 
-    // Inizializzo il filtro passa-basso con una frequenza di cutoff di 200 Hz (basse frequenze)
+    // Inizializzo il filtro passa basso con una frequenza di cutoff di 100 Hz
     this.lowPassFilter = new LowPassFilter(100, SAMPLING_RATE);
   }
 
@@ -149,8 +159,8 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
         const whineFreq = BASE_FREQUENCIES[0] + frequencyOffset + WHINE_OFFSET;
         sample += WHINE_AMPLITUDE * WAFE_FUNC(this.whinePhase);
 
-        // Aggiunta del rumore bianco
-        const noiseAmplitude = Math.min(currentRpm / MAX_RPM, 1); // L'ampiezza del rumore bianco aumenta con gli RPM
+        // Aggiunta del rumore bianco con ampiezza controllata dagli RPM
+        const noiseAmplitude = mapRpmToNoiseAmplitude(currentRpm); // L'ampiezza del rumore bianco ora varia con gli RPM
         let whiteNoise = generateWhiteNoise() * noiseAmplitude;
 
         const filteredWhiteNoise = this.lowPassFilter.process(whiteNoise);

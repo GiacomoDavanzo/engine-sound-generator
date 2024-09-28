@@ -9,16 +9,6 @@
 
    <title>Sounds Worklet</title>
 
-   <style>
-      canvas {
-         display: block;
-      }
-
-      #canvas {
-         margin: 0 auto;
-      }
-   </style>
-
    <script type="module">
       import * as THREE from '../three_js/build/three.module.js';
       import { SoundGeneratorAudioListener, SineWaveSoundGenerator, EngineSoundGenerator, ElectricEngineSoundGenerator } from './sound_generator_worklet.js';
@@ -75,7 +65,7 @@
 
          soundElectricEngine = new ElectricEngineSoundGenerator({ listener: listener })
 
-         engine = new Engine();
+         engine = new Engine({ momentOfInertia: 0.3 });
          /*
           * generates the sound using a worklet
           * The lengths of the different waveguides are specified in samples.
@@ -485,8 +475,7 @@
          <input disabled="true" type="range" id="input_car_engine_volume_outlet" name="input_car_engine_volume_outlet"
             min="0" max="100" value="100">
          <label for="input_car_engine_throttle" id="label_car_engine_throttle">Acceleratore</label>
-         <input type="range" id="input_car_engine_throttle" name="input_car_engine_throttle" min="0" max="100"
-            value="0">
+         <input type="range" id="input_car_engine_throttle" name="input_car_engine_throttle" min="0" max="50" value="0">
 
          Rpm <br />
          <span id="span_car_engine_rpm">0</span>

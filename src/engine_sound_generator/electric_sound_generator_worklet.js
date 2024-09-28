@@ -7,7 +7,6 @@ const PITCH_LOWERING_FACTOR = 5; // Abbasso il pitch, per poter legare la freque
 // Parametri LFO
 const MIN_LFO_FREQUENCY = 5; // Frequenza minima dell'LFO (Hz)
 const MAX_LFO_FREQUENCY = 100; // Frequenza massima dell'LFO (Hz)
-const MIN_LFO_RPM = 700; // RPM al di sotto del quale si usa MIN_LFO_FREQUENCY
 const MIN_LFO_AMPLITUDE = 30; // Ampiezza minima del vibrato (Hz)
 const MAX_LFO_AMPLITUDE = 20; // Ampiezza massima del vibrato (Hz)
 
@@ -19,7 +18,9 @@ const WHINE_AMPLITUDE = 0.005;
 const ATTENUATION_START_RPM = 6900;
 const ATTENUATION_END_RPM = 7300;
 
+// Costanti riguardanti il motore
 const MAX_RPM = 7500;
+const IDLING_ENGINE_RPM = 700;
 
 const WAFE_FUNC = customEnvelopeWave; // Costante utile per cambiare l'onda
 
@@ -51,11 +52,11 @@ function calculateVolumeAttenuation(rpm) {
 
 // Funzione per mappare RPM alla frequenza dell'LFO
 function mapRpmToLfoFrequency(rpm) {
-  if (rpm <= MIN_LFO_RPM) {
+  if (rpm <= IDLING_ENGINE_RPM) {
     return MIN_LFO_FREQUENCY;
   }
   const normalizedRpm =
-    (Math.min(rpm, MAX_RPM) - MIN_LFO_RPM) / (MAX_RPM - MIN_LFO_RPM);
+    (Math.min(rpm, MAX_RPM) - IDLING_ENGINE_RPM) / (MAX_RPM - IDLING_ENGINE_RPM);
   return (
     MIN_LFO_FREQUENCY + (MAX_LFO_FREQUENCY - MIN_LFO_FREQUENCY) * normalizedRpm
   );
@@ -90,6 +91,10 @@ function customEnvelopeWave(phase) {
   const flatteningFactor = Math.pow(Math.cos(x / 2), 2);
   return sinePart * flatteningFactor;
 }
+// Funzione per generare rumore bianco
+function generateWhiteNoise() {
+  return Math.random() * 2 - 1;
+}
 
 class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
   constructor() {
@@ -98,6 +103,9 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
     this.lfoPhase = 0;
     this.whinePhase = 0;
     this.phases = BASE_FREQUENCIES.map(() => 0);
+
+    // Inizializzo il filtro passa-basso con una frequenza di cutoff di 200 Hz (basse frequenze)
+    this.lowPassFilter = new LowPassFilter(100, SAMPLING_RATE);
   }
 
   static get parameterDescriptors() {
@@ -127,8 +135,7 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
         const lfoAmplitude = mapRpmToLfoAmplitude(currentRpm);
 
         // Calcolo della frequenza modulata (vibrato)
-        const vibratoOffset =
-          WAFE_FUNC(this.lfoPhase) * lfoAmplitude;
+        const vibratoOffset = WAFE_FUNC(this.lfoPhase) * lfoAmplitude;
 
         // Somma delle onde a dente di sega con la frequenza modulata dal vibrato
         let sample =
@@ -142,8 +149,17 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
         const whineFreq = BASE_FREQUENCIES[0] + frequencyOffset + WHINE_OFFSET;
         sample += WHINE_AMPLITUDE * WAFE_FUNC(this.whinePhase);
 
-        // Attenuazione del volume
-        outputChannel[i] = sample * volumeAttenuation;
+        // Aggiunta del rumore bianco
+        const noiseAmplitude = Math.min(currentRpm / MAX_RPM, 1); // L'ampiezza del rumore bianco aumenta con gli RPM
+        let whiteNoise = generateWhiteNoise() * noiseAmplitude;
+
+        const filteredWhiteNoise = this.lowPassFilter.process(whiteNoise);
+
+        // Aggiungo il rumore bianco filtrato al segnale
+        sample += filteredWhiteNoise;
+
+        // Attenuazione del volume solo per il suono del motore, escludendo il rumore bianco
+        outputChannel[i] = sample * volumeAttenuation + filteredWhiteNoise;
 
         // Aggiornamento delle fasi delle onde a dente di sega
         BASE_FREQUENCIES.forEach((freq, index) => {
@@ -172,6 +188,27 @@ class ElectricEngineSoundGenerator extends AudioWorkletProcessor {
     }
 
     return true;
+  }
+}
+
+class LowPassFilter {
+  constructor(cutoffFrequency, sampleRate) {
+    this.cutoffFrequency = cutoffFrequency;
+    this.sampleRate = sampleRate;
+    this.alpha = 0;
+    this.lastOutput = 0;
+    this.updateAlpha();
+  }
+
+  updateAlpha() {
+    const dt = 1 / this.sampleRate;
+    const rc = 1 / (2 * Math.PI * this.cutoffFrequency);
+    this.alpha = dt / (rc + dt);
+  }
+
+  process(input) {
+    this.lastOutput = this.alpha * input + (1 - this.alpha) * this.lastOutput;
+    return this.lastOutput;
   }
 }
 
